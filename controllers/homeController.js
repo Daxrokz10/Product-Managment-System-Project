@@ -1,7 +1,7 @@
 const Product = require('../models/productSchema');
 
 module.exports.getHome = (req,res)=>{
-    return res.render('pages/index', { title: "Dashboard", page: "dashboard" });
+    return res.render('index', { title: "Dashboard", page: "dashboard" });
 }
 
 module.exports.getProducts = async (req,res)=>{

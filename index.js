@@ -9,9 +9,12 @@ const bcrypt = require('bcrypt');
 const { db } = require('./configs/db');
 const passport = require('passport');
 const initializePassport = require('./middlewares/passport');
+const path = require('path');
 
 
 app.use(express.urlencoded({ extended: true }));
+// Serve static assets from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 const port = process.env.PORT || 3000;
 
 initializePassport(passport);
