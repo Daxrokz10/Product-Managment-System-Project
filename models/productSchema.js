@@ -28,7 +28,12 @@ const productSchema = new mongoose.Schema({
     tags:{
         type: [String],
         required: true,
-    }
+    },
+    availability: {
+        type: String,
+        enum: ['Available', 'Unavailable'],
+        default: 'Available',
+    },
 });
 
 const Product = mongoose.model('Product', productSchema);

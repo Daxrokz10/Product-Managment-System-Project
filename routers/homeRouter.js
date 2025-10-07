@@ -7,4 +7,6 @@ const Product = require('../models/productSchema');
 homeRouter.get('/',passport.userAuth,homeCtrl.getHome);
 homeRouter.get('/products',passport.userAuth,homeCtrl.getProducts);
 
+homeRouter.get('/gridView',passport.userAuth,homeCtrl.getUserPage);
+
 module.exports = homeRouter;

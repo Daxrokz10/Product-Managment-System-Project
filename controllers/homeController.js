@@ -9,3 +9,13 @@ module.exports.getProducts = async (req,res)=>{
     console.log(products);
     return res.render('./pages/product/list',{products});
 }
+
+module.exports.getUserPage = async (req, res) => {
+    try {
+        const products = await Product.find({});
+        return res.render('./pages/userPage', { products });
+    } catch (error) {
+        console.error(`Error fetching products: ${error.message}`);
+        return res.status(500).send("Internal Server Error");
+    }
+};

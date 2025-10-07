@@ -52,3 +52,10 @@ module.exports.postSignup = async (req, res) => {
     return res.redirect("/auth/signup");
   }
 };
+
+module.exports.logout = (req,res)=>{
+  req.logout((err)=>{
+    if(err) return next(err);
+    return res.redirect('/auth/login');
+  })
+}

@@ -1,0 +1,24 @@
+<%- include('../partials/header.ejs') %>
+<div class="row me-0 vw-100" style="padding-top: 100px; padding-left: 50px;">
+  <% products.forEach(product => { %>
+    <div class="col-md-4">
+      <div class="card <%= product.stock === 0 ? 'disabled' : '' %>">
+        <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
+        <div class="card-body">
+          <h5 class="card-title"><%= product.name %></h5>
+          <p class="card-text">Price: $<%= product.price %></p>
+          <p class="card-text">Category: <%= product.category %></p>
+          <p class="card-text">Stock: <%= product.stock %></p>
+          <% if (product.stock < 15 && product.stock > 0) { %>
+            <span class="badge bg-warning text-dark">Stock Low</span>
+          <% } %>
+          <% if (product.stock === 0) { %>
+            <span class="badge bg-danger">Out of Stock</span>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('../partials/footer.ejs') %>
