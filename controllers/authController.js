@@ -71,9 +71,10 @@ module.exports.postSignup = async (req, res) => {
     }, (error, info) => {
       if (error) {
         console.error("Error sending email:", error.message);
-        return res.redirect("/auth/signup?error=Failed to send verification email");
+        return res.render("./pages/auth/verifyNotice", { email, error: "Failed to send verification email" });
       }
       console.log("Email sent:", info.response);
+      return res.render("./pages/auth/verifyNotice", { email });
     });
 
     console.log("Verification email sent to:", email);
