@@ -1,6 +1,8 @@
 const passport = require("passport");
 const User = require('../models/userSchema');
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
+const transporter = require('../configs/nodemailer');
 
 module.exports.getLogin = (req, res) => {
   return res.render("./pages/auth/login");
@@ -31,25 +33,49 @@ module.exports.getSignup = (req, res) => {
   return res.render("./pages/auth/signup");
 };
 module.exports.postSignup = async (req, res) => {
-  const { username, email, password } = req.body;
+ const { username, email, password } = req.body;
   try {
     const existing = await User.findOne({ $or: [{ username }, { email }] });
     if (existing) {
-      return res.redirect("/?signupError=1");
+      if (!existing.verified) {
+        return res.redirect("/auth/signup?error=Verification already sent");
+      }
+      return res.redirect("/auth/signup?error=User already exists");
     }
-    const hashed = await bcrypt.hash(password,10);
-    await User.create({
-      username: username,
-      email: email,
-      password: hashed
-    //   verifiedStatus: true,
+
+    const hashed = await bcrypt.hash(password, 10);
+    const token = uuidv4();
+
+    const user = await User.create({
+      username,
+      email,
+      password: hashed,
+      verified: false,
+      verifyToken: token,
     });
-    return res.redirect("/auth/login");
-    // req.session.userData = { username, email, password, role };
-    // return res.render("./pages/auth/signup/sendOTP", { userData: req.session.userData });
+
+    // ✅ Send email with verification link
+    const verifyLink = `${process.env.DOMAIN || req.protocol + '://' + req.get("host")}/auth/verify/${token}`;
+
+    await transporter.sendMail({
+      from: `"PMS Auth" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Verify your email address",
+      html: `
+        <h2>Hello ${username},</h2>
+        <p>Thank you for signing up!</p>
+        <p>Please click the link below to verify your email:</p>
+        <a href="${verifyLink}" style="background:#2d79f3;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;">Verify Email</a>
+        <p>This link will not expire.</p>
+      `,
+    });
+
+    console.log("Verification email sent to:", email);
+
+    return res.render("./pages/auth/verifyNotice", { email });
   } catch (error) {
     console.log(error.message);
-    return res.redirect("/auth/signup");
+    return res.redirect("/auth/signup?error=Something went wrong");
   }
 };
 

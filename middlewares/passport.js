@@ -33,14 +33,17 @@ function initialize(passport) {
       .catch((err) => done(err));
   });
 
-  passport.userAuth = (req,res,next)=>{
-    if(req.isAuthenticated()){
+  passport.userAuth = (req, res, next) => {
+    if (req.isAuthenticated() && req.user.verified) {
       res.locals.user = req.user;
       res.locals.session = req.session;
       return next();
     }
-    return res.redirect('/auth/login');
-  }
+    if (req.isAuthenticated() && !req.user.verified) {
+      return res.render("./pages/auth/verifyNotice", { email: req.user.email });
+    }
+    return res.redirect("/auth/login");
+  };
 }
 
 
