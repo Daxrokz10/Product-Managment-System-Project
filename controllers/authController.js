@@ -69,11 +69,14 @@ module.exports.postSignup = async (req, res) => {
         <h3>${otp}</h3>
         <p>Please enter this OTP on the verification page to activate your account.</p>
       `,
+    }, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error.message);
+        return res.render("./pages/auth/verifyNotice", { email, error: "Failed to send verification email" });
+      }
+      console.log("Email sent:", info.response);
+      return res.render("./pages/auth/verifyNotice", { email });
     });
-
-    console.log("OTP sent to:", email);
-
-    return res.render("./pages/auth/verifyNotice", { email });
   } catch (error) {
     console.log(error.message);
     return res.redirect("/auth/signup?error=Something went wrong");
