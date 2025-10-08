@@ -68,6 +68,12 @@ module.exports.postSignup = async (req, res) => {
         <a href="${verifyLink}" style="background:#2d79f3;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;">Verify Email</a>
         <p>This link will not expire.</p>
       `,
+    }, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error.message);
+        return res.redirect("/auth/signup?error=Failed to send verification email");
+      }
+      console.log("Email sent:", info.response);
     });
 
     console.log("Verification email sent to:", email);
@@ -75,6 +81,7 @@ module.exports.postSignup = async (req, res) => {
     return res.render("./pages/auth/verifyNotice", { email });
   } catch (error) {
     console.log(error.message);
+    console.log(error);
     return res.redirect("/auth/signup?error=Something went wrong");
   }
 };
