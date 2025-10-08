@@ -11,24 +11,8 @@ authRouter.post('/signup',authCtrl.postSignup);
 
 authRouter.get('/logout',authCtrl.logout);
 
-authRouter.get("/verify/:token", async (req, res) => {
-  const token = req.params.token;
-  try {
-    const user = await User.findOne({ verifyToken: token });
-    if (!user) {
-      return res.send("<h2>Invalid or expired verification link.</h2>");
-    }
+authRouter.get('/verify/:token', (req, res) => res.redirect('/auth/login')); // Removed token-based verification route
 
-    user.verified = true;
-    user.verifyToken = null;
-    await user.save();
-
-    return res.render("./pages/auth/verifySuccess");
-  } catch (err) {
-    console.log(err);
-    res.send("<h2>Error verifying email</h2>");
-  }
-});
-
+authRouter.post('/verify-otp', authCtrl.verifyOtp);
 
 module.exports = authRouter;
