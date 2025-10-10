@@ -11,8 +11,5 @@ authRouter.post('/signup',authCtrl.postSignup);
 
 authRouter.get('/logout',authCtrl.logout);
 
-authRouter.get('/verify/:token', (req, res) => res.redirect('/auth/login')); // Removed token-based verification route
-
-authRouter.post('/verify-otp', authCtrl.verifyOtp);
 
 module.exports = authRouter;

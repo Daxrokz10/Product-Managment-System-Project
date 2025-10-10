@@ -34,13 +34,10 @@ function initialize(passport) {
   });
 
   passport.userAuth = (req, res, next) => {
-    if (req.isAuthenticated() && req.user.verified) {
+    if (req.isAuthenticated()) {
       res.locals.user = req.user;
       res.locals.session = req.session;
       return next();
-    }
-    if (req.isAuthenticated() && !req.user.verified) {
-      return res.render("./pages/auth/verifyNotice", { email: req.user.email });
     }
     return res.redirect("/auth/login");
   };
