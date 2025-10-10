@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const transporter = require('../configs/nodemailer');
 
+const otpStore = {}; // Temporary store for OTPs
+
 module.exports.getLogin = (req, res) => {
   return res.render("./pages/auth/login");
 };
@@ -44,19 +46,18 @@ module.exports.postSignup = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const token = uuidv4();
+
+    const otp = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit OTP
+    otpStore[email] = otp; // Store OTP temporarily
 
     const user = await User.create({
       username,
       email,
       password: hashed,
       verified: false,
-      verifyToken: token,
     });
 
-    // ✅ Send email with verification link
-    const verifyLink = `${process.env.DOMAIN || req.protocol + '://' + req.get("host")}/auth/verify/${token}`;
-
+    // ✅ Send OTP via email
     await transporter.sendMail({
       from: `"PMS Auth" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -64,9 +65,9 @@ module.exports.postSignup = async (req, res) => {
       html: `
         <h2>Hello ${username},</h2>
         <p>Thank you for signing up!</p>
-        <p>Please click the link below to verify your email:</p>
-        <a href="${verifyLink}" style="background:#2d79f3;color:white;padding:10px 20px;text-decoration:none;border-radius:8px;">Verify Email</a>
-        <p>This link will not expire.</p>
+        <p>Your OTP for email verification is:</p>
+        <h3>${otp}</h3>
+        <p>Please enter this OTP on the verification page to activate your account.</p>
       `,
     }, (error, info) => {
       if (error) {
@@ -76,14 +77,33 @@ module.exports.postSignup = async (req, res) => {
       console.log("Email sent:", info.response);
       return res.render("./pages/auth/verifyNotice", { email });
     });
-
-    console.log("Verification email sent to:", email);
-
-    return res.render("./pages/auth/verifyNotice", { email });
   } catch (error) {
     console.log(error.message);
-    console.log(error);
     return res.redirect("/auth/signup?error=Something went wrong");
+  }
+};
+
+module.exports.verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    if (otpStore[email] && otpStore[email] === parseInt(otp)) {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.redirect("/auth/verify?error=User not found");
+      }
+
+      user.verified = true;
+      await user.save();
+
+      delete otpStore[email]; // Remove OTP after successful verification
+
+      return res.render("./pages/auth/verifySuccess");
+    } else {
+      return res.redirect("/auth/verify?error=Invalid OTP");
+    }
+  } catch (error) {
+    console.log(error.message);
+    return res.redirect("/auth/verify?error=Something went wrong");
   }
 };
 
